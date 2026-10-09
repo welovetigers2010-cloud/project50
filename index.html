@@ -1,0 +1,242 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Project 50 · 严格版</title>
+<style>
+  :root{
+    --paper:#F7FBFA;--ink:#1B1B1B;--mint:#D5E9E5;--mint-d:#B9DCD5;--mint-deep:#8FC7BC;
+    --deep:#5E9C8F;--red:#C0392B;--line:#E0EBE8;--sub:#7A8A86;--salt:#EDF5F3;
+  }
+  *{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
+  html{-webkit-text-size-adjust:100%;}
+  body{
+    background:var(--paper);color:var(--ink);
+    font-family:'Avenir Next','Helvetica Neue',Helvetica,'PingFang SC','Noto Sans SC','Microsoft YaHei',Arial,sans-serif;
+    line-height:1.65;-webkit-font-smoothing:antialiased;
+  }
+  .wrap{max-width:680px;margin:0 auto;padding:0 22px 80px;}
+  header{padding:50px 0 24px;}
+  .kicker{font-size:11px;letter-spacing:.28em;color:var(--red);font-weight:700;margin-bottom:14px;}
+  .brand{display:flex;align-items:baseline;gap:12px;flex-wrap:wrap;}
+  .brand b{font-size:42px;font-weight:800;letter-spacing:.04em;}
+  .brand span{font-size:28px;font-weight:300;letter-spacing:.06em;}
+  .sub{color:var(--sub);font-size:14px;margin-top:6px;}
+  .sub em{font-style:normal;color:var(--red);}
+
+  /* 状态碑 */
+  .stele{display:flex;gap:0;border:1px solid var(--line);border-radius:12px;background:#fff;overflow:hidden;margin:18px 0 30px;}
+  .stele div{flex:1;padding:13px 8px 11px;text-align:center;}
+  .stele div+div{border-left:1px solid var(--line);}
+  .stele .v{font-size:26px;font-weight:800;color:var(--deep);display:block;line-height:1.2;}
+  .stele .k{font-size:10px;letter-spacing:.18em;color:var(--sub);}
+  .stele .v.r{color:var(--red);}
+
+  .sect{font-size:11px;letter-spacing:.22em;color:var(--sub);margin:0 0 12px;font-weight:600;}
+
+  /* 今日七项 */
+  .today{background:#fff;border:1px solid var(--line);border-radius:14px;padding:16px 18px 8px;margin-bottom:34px;}
+  .today .thead{display:flex;justify-content:space-between;align-items:baseline;border-bottom:1px solid var(--line);padding-bottom:10px;margin-bottom:4px;}
+  .today .thead .d{font-size:19px;font-weight:800;}
+  .today .thead .dt{font-size:12px;color:var(--sub);letter-spacing:.1em;}
+  .rule{display:flex;align-items:center;gap:12px;padding:11px 2px;border-bottom:1px solid var(--salt);cursor:pointer;}
+  .rule:last-of-type{border-bottom:none;}
+  .rule .no{font-size:12px;font-weight:800;color:var(--mint-deep);width:24px;flex:none;}
+  .rule .tx{flex:1;}
+  .rule .tx b{font-size:15px;font-weight:700;display:block;}
+  .rule .tx i{font-style:normal;font-size:11.5px;color:var(--sub);display:block;}
+  .rule .dot{width:22px;height:22px;border:1.6px solid var(--mint-deep);border-radius:50%;flex:none;display:flex;align-items:center;justify-content:center;transition:background .18s;}
+  .rule.on .dot{background:var(--mint-deep);}
+  .rule.on .dot:after{content:"";width:8px;height:4.5px;border-left:2px solid #fff;border-bottom:2px solid #fff;transform:rotate(-45deg) translate(0.5px,-0.5px);}
+  .rule.on .tx b{color:var(--deep);}
+  .rule:active .dot{transform:scale(.9);}
+  .tdone{display:none;text-align:center;padding:10px 0 6px;font-size:12px;letter-spacing:.2em;color:var(--deep);font-weight:700;}
+  .today.full .tdone{display:block;animation:fade .5s;}
+  @keyframes fade{from{opacity:0}to{opacity:1}}
+
+  /* 五十格墙 */
+  .wall{background:var(--mint);border-radius:14px;padding:16px;}
+  .cells{display:grid;grid-template-columns:repeat(10,1fr);gap:7px;}
+  .c{aspect-ratio:1;border-radius:8px;background:rgba(255,255,255,.72);border:1.2px solid rgba(27,43,40,.16);
+     display:flex;align-items:center;justify-content:center;font-size:10.5px;font-weight:700;color:rgba(27,43,40,.45);}
+  .c.full{background:var(--mint-deep);border-color:var(--mint-deep);color:#fff;}
+  .c.now{border:2px solid var(--ink);color:var(--ink);}
+  .c.pop{animation:pop .35s;}
+  @keyframes pop{0%{transform:scale(.85)}55%{transform:scale(1.12)}100%{transform:scale(1)}}
+  .wallcap{display:flex;justify-content:space-between;font-size:10.5px;letter-spacing:.16em;color:var(--sub);margin-top:10px;padding:0 2px;}
+
+  .law{margin-top:34px;border-top:1px solid var(--line);padding-top:14px;}
+  .law p{font-size:12.5px;color:var(--sub);}
+  .law p em{font-style:normal;color:var(--red);font-weight:700;}
+  footer{margin-top:26px;display:flex;justify-content:space-between;align-items:baseline;}
+  footer p{font-size:12px;color:var(--sub);letter-spacing:.06em;}
+  footer .fnum{font-size:20px;font-weight:300;letter-spacing:.08em;}
+
+  /* 严格遮罩（失败/完成） */
+  .veil{position:fixed;inset:0;background:linear-gradient(170deg,#F2FAF8 0%,#D8ECE7 100%);z-index:50;
+        display:none;align-items:center;justify-content:center;padding:26px;}
+  .veil.show{display:flex;}
+  .veil .box{max-width:430px;text-align:center;}
+  .veil .vk{font-size:11px;letter-spacing:.3em;color:var(--red);font-weight:700;margin-bottom:16px;}
+  .veil h1{font-size:34px;font-weight:800;line-height:1.3;letter-spacing:.02em;}
+  .veil h1 span{font-weight:300;}
+  .veil p{font-size:14px;color:var(--sub);margin-top:14px;}
+  .veil .big{font-size:56px;font-weight:800;color:var(--deep);line-height:1.15;}
+  .veil .btn{margin-top:28px;border:none;background:var(--ink);color:#fff;font:inherit;font-size:14px;font-weight:700;
+             letter-spacing:.16em;padding:13px 34px;border-radius:999px;cursor:pointer;}
+  .veil .btn:active{transform:scale(.97);}
+  .veil .salt{font-size:40px;font-weight:300;color:var(--mint-deep);margin-bottom:6px;}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <p class="kicker">Strict Mode · 50 Days · No Excuses</p>
+    <div class="brand"><b>PROJECT</b><span>50</span></div>
+    <p class="sub">50 天。7 条规则。少一天，<em>从头再来</em>。</p>
+  </header>
+
+  <div class="stele">
+    <div><span class="v" id="stDay">Day 1</span><span class="k">当前进度</span></div>
+    <div><span class="v" id="stBest">0</span><span class="k">最长纪录 · 天</span></div>
+    <div><span class="v r" id="stTry">#1</span><span class="k">尝试次数</span></div>
+  </div>
+
+  <p class="sect">TODAY · 今日七项</p>
+  <div class="today" id="todayCard">
+    <div class="thead"><span class="d" id="tDay">Day 1</span><span class="dt" id="tDate"></span></div>
+    <div id="rules"></div>
+    <p class="tdone">DAY COMPLETE · 今日已打满 ✓</p>
+  </div>
+
+  <p class="sect">THE WALL · 五十格</p>
+  <div class="wall">
+    <div class="cells" id="wall"></div>
+    <div class="wallcap"><span>DAY 01</span><span id="wMid"></span><span>DAY 50</span></div>
+  </div>
+
+  <div class="law">
+    <p>规则只有一条：<em>每天 7 项，全部打满。</em>过了午夜，昨天少一项，全部记录清零，从 Day 01 重新开始。这里没有补卡，没有请假，没有商量。</p>
+  </div>
+  <footer>
+    <p>No mercy. No make-ups. — 从 Day 01 到 Day 50，中间没有如果。</p>
+    <span class="fnum">50</span>
+  </footer>
+</div>
+
+<!-- 失败仪式 -->
+<div class="veil" id="failVeil">
+  <div class="box">
+    <p class="vk">RECORD WIPED · 记录已清零</p>
+    <div class="salt">◌ ◌ ◌</div>
+    <h1 id="failTitle">Day 17<span>，差 2 项。</span></h1>
+    <p id="failDesc">海盐化了。全部记录归零，明天是新的 Day 01。</p>
+    <button class="btn" onclick="acceptReset()">接受，从头再来</button>
+  </div>
+</div>
+
+<!-- 完成庆典 -->
+<div class="veil" id="winVeil">
+  <div class="box">
+    <p class="vk">PROJECT 50 · COMPLETED</p>
+    <p class="big">50 / 50</p>
+    <h1>全部打满。<span>你是另一个人了。</span></h1>
+    <p>五十天，七条规则，一天没有少。</p>
+    <button class="btn" onclick="closeVeil('winVeil')">合上这本</button>
+  </div>
+</div>
+
+<script>
+"use strict";
+const KEY="project50_strict_v1";
+const RULES=[
+  ["8 点前起床","睡满 7 小时，闹钟响就起"],
+  ["晨间例程 1 小时","无手机、无干扰，只属于自己"],
+  ["锻炼 1 小时","任何形式，让身体动起来"],
+  ["阅读 10 页","书、报刊、长文都算"],
+  ["新技能 1 小时","持续投入一件想学的事"],
+  ["健康饮食","无垃圾食品、无酒精、无添加糖、无汽水"],
+  ["写日志","记下今天，追踪进度"]
+];
+let S;
+try{S=JSON.parse(localStorage.getItem(KEY));if(!S||!S.startDate)S=null;}catch(e){S=null;}
+if(!S)S={attempt:1,best:0,startDate:null,days:{},won:false};
+const save=()=>localStorage.setItem(KEY,JSON.stringify(S));
+const pad=n=>String(n).padStart(2,"0");
+function fmt(d){return d.getFullYear()+"-"+pad(d.getMonth()+1)+"-"+pad(d.getDate());}
+function today(){return fmt(new Date());}
+function addDays(str,n){const p=str.split("-").map(Number);const d=new Date(p[0],p[1]-1,p[2]);d.setDate(d.getDate()+n);return fmt(d);}
+function diffDays(a,b){const p=x=>{const q=x.split("-").map(Number);return new Date(q[0],q[1]-1,q[2]);};return Math.round((p(b)-p(a))/864e5);}
+const dayNo=()=>diffDays(S.startDate,today())+1;
+
+/* 严格引擎：任何已过去的日子没打满 7 项 → 清零 */
+function enforce(){
+  if(!S.startDate)return;
+  const t=today();
+  let failDay=null;
+  for(let d=S.startDate;diffDays(d,t)>0;d=addDays(d,1)){
+    const arr=S.days[d];
+    if(!arr||arr.filter(Boolean).length<7){failDay=d;break;}
+  }
+  if(failDay){
+    const dn=diffDays(S.startDate,failDay)+1;
+    const done=failDay in S.days?S.days[failDay].filter(Boolean).length:0;
+    S.best=Math.max(S.best,dn-1);
+    S.days={};
+    showFail(dn,7-done);
+    S.startDate=today();S.attempt++;save();
+  }
+}
+function showFail(day,missing){
+  document.getElementById("failTitle").innerHTML="Day "+day+"<span>，差 "+missing+" 项。</span>";
+  document.getElementById("failDesc").textContent=(day>1?"坚持了 "+(day-1)+" 天。":"第一晚就没打满。")+"海盐化了。全部记录归零，明天是新的 Day 01。";
+  document.getElementById("failVeil").classList.add("show");
+}
+function acceptReset(){document.getElementById("failVeil").classList.remove("show");render();}
+function closeVeil(id){document.getElementById(id).classList.remove("show");}
+
+function toggleRule(i){
+  const t=today();
+  const arr=S.days[t]||(S.days[t]=[false,false,false,false,false,false,false]);
+  arr[i]=!arr[i];
+  save();
+  const dn=dayNo();
+  if(arr[i]&&arr.filter(Boolean).length===7){
+    const cell=document.getElementById("wc"+(dn-1));
+    if(cell){cell.classList.add("pop");setTimeout(()=>cell.classList.remove("pop"),380);}
+  }
+  render();
+}
+
+function render(){
+  const t=today(),dn=dayNo(),clamped=Math.min(Math.max(dn,1),50);
+  const arr=S.days[t]||null,cnt=arr?arr.filter(Boolean).length:0;
+  document.getElementById("stDay").textContent="Day "+clamped;
+  document.getElementById("stBest").textContent=S.best;
+  document.getElementById("stTry").textContent="#"+S.attempt;
+  document.getElementById("tDay").textContent="Day "+clamped+(dn===50?" · 最后一天":"");
+  document.getElementById("tDate").textContent=t.replace(/-/g," . ");
+  const w=dn>=1&&dn<=50?(dn-1):-1;
+  document.getElementById("rules").innerHTML=RULES.map((r,i)=>
+    '<div class="rule'+(arr&&arr[i]?" on":"")+'" onclick="toggleRule('+i+')">'
+    +'<span class="no">0'+(i+1)+'</span><span class="tx"><b>'+r[0]+'</b><i>'+r[1]+'</i></span><span class="dot"></span></div>').join("");
+  document.getElementById("todayCard").classList.toggle("full",cnt===7);
+  let cells="";
+  for(let i=0;i<50;i++){
+    const d=S.startDate?addDays(S.startDate,i):null;
+    const full=d&&S.days[d]&&S.days[d].filter(Boolean).length===7;
+    cells+='<div class="c'+(full?" full":"")+(i===w?" now":"")+'" id="wc'+i+'">'+pad(i+1)+'</div>';
+  }
+  document.getElementById("wall").innerHTML=cells;
+  document.getElementById("wMid").textContent="今日 "+cnt+" / 7";
+  if(S.startDate&&dn===50&&arr&&cnt===7&&!S.won){S.won=true;save();document.getElementById("winVeil").classList.add("show");}
+  if(S.startDate&&dn>50&&S.won){document.getElementById("winVeil").classList.remove("show");}
+}
+
+enforce();
+if(!S.startDate){S.startDate=today();save();}
+render();
+</script>
+</body>
+</html>
